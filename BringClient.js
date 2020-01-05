@@ -1,3 +1,4 @@
+/*jshint esversion: 6*/
 const axios = require("axios");
 const Store = require("data-store");
 const querystring = require("querystring");
@@ -22,12 +23,12 @@ class BringClient {
             this.login(opts.email, opts.password).then(() => {
                 this.userId = this.store.get("user_id");
                 this.defaultListId = this.store.get("default_list_id");
-                axios.defaults.headers.common["Authorization"] = "Bearer " + this.store.get("access_token");
+                axios.defaults.headers.common.Authorization = "Bearer " + this.store.get("access_token");
             });
         } else {
             this.userId = this.store.get("user_id");
             this.defaultListId = this.store.get("default_list_id");
-            axios.defaults.headers.common["Authorization"] = "Bearer " + this.store.get("access_token");
+            axios.defaults.headers.common.Authorization = "Bearer " + this.store.get("access_token");
         }
     }
 
@@ -41,10 +42,10 @@ class BringClient {
             password: password
         })).then(response => {
             const loginObj = response.data;
-            this.store.set("user_id", loginObj["uuid"]);
-            this.store.set("default_list_id", loginObj["bringListUUID"]);
-            this.store.set("access_token", loginObj["access_token"]);
-            this.store.set("valid_until", new Date().getTime() + (loginObj["expires_in"] * 1000));
+            this.store.set("user_id", loginObj.uuid);
+            this.store.set("default_list_id", loginObj.bringListUUID);
+            this.store.set("access_token", loginObj.access_token);
+            this.store.set("valid_until", new Date().getTime() + (loginObj.expires_in * 1000));
         });
     }
 

@@ -1,3 +1,4 @@
+/*jshint esversion: 6*/
 const NodeHelper = require("node_helper");
 const BringClient = require("./BringClient");
 
