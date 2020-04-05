@@ -25,7 +25,6 @@ Module.register("MMM-Bring", {
 
     getScripts: function () {
         return [
-            //this.file('node_modules/electron-virtual-keyboard/index.js'),
             this.file('node_modules/simple-keyboard/build/index.js')
         ];
     },
@@ -42,7 +41,48 @@ Module.register("MMM-Bring", {
 
     },
 
+    notificationReceived: function (noti, payload) {
+        if (noti = "MODULE_DOM_CREATED" && document.getElementById("bring-inputDiv")) {
+          //console.log(document.getElementById("bring-inputDiv").innerHTML);
+          var Keyboard = window.SimpleKeyboard.default;
+          this.keyboard = new Keyboard({
+            onChange: input => this.onChange(input),
+            onKeyPress: button => this.onKeyPress(button),
+            mergeDisplay: true,
+            layoutName: "default",
+            layout: {
+              default: [
+                "q w e r t y u i o p ü",
+                "a s d f g h j k l ä",
+                "{shift} z x c v b n m ö {backspace}",
+                "{numbers} {space} {ent}"
+              ],
+              shift: [
+                "Q W E R T Y U I O P Ü",
+                "A S D F G H J K L Ä",
+                "{shift} Z X C V B N M Ö {backspace}",
+                "{numbers} {space} {ent}"
+              ],
+              numbers: ["1 2 3", "4 5 6", "7 8 9", "{abc} 0 {backspace}"]
+            },
+            display: {
+              "{numbers}": "123",
+              "{ent}": "return",
+              "{backspace}": "⌫",
+              "{shift}": "⇧",
+              "{abc}": "ABC"
+            }
+          });
+        }
+    },
+
+
+
+
     getDom: function () {
+        const wrapper = document.createElement("div");
+        wrapper.className = "bring-list-wrapper bring-" + this.data.position;
+
         const container = document.createElement("div");
         container.className = "bring-list-container bring-" + this.data.position;
 
@@ -97,55 +137,6 @@ Module.register("MMM-Bring", {
             container.appendChild(bringList);
         }
 
-        //input
-        if (this.config.inputField) {
-          const inputDiv = document.createElement("div");
-          inputDiv.className = "inputDiv";
-          const input = document.createElement("input");
-          input.id = "bring-inputField";
-          input.setAttribute("type", "text");
-          input.addEventListener("focus", event => {
-              if (!this.keyboard) {
-                  console.log("No keyboard detected. Initializing now.");
-                  //Add event listener on first implementation of keyboard.
-                  document.addEventListener("click", event => {
-                      if ( event.target !== this.keyboard.keyboardDOM && event.target.id !== "bring-inputField" && !event.target.classList.contains("hg-button")) {
-                          this.hideKeyboard();
-                      }
-                  });
-              }
-              var Keyboard = window.SimpleKeyboard.default;
-              this.keyboard = new Keyboard({
-                  onChange: input => this.onChange(input),
-                  onKeyPress: button => this.onKeyPress(button)
-              });
-          });
-          input.addEventListener("input", event => {
-              this.keyboard.setInput(event.target.value);
-          });
-          const send = document.createElement("button");
-          send.className = "bring-sendButton";
-          send.innerText = "To the List!";
-          send.setAttribute("name", "sendPurchase");
-          send.onclick = () => {
-              var addItem = document.getElementById("bring-inputField").value;
-              if (addItem !== '') {
-                  //capitalize first letter
-                  addItem = addItem.charAt(0).toUpperCase() + addItem.substring(1);
-                  console.log(addItem + " added to List!");
-                  this.itemClicked({name: addItem, purchase: false, listId: this.list.uuid});
-              }
-          };
-          inputDiv.appendChild(input);
-          inputDiv.appendChild(send);
-          container.appendChild(inputDiv);
-          const kb = document.createElement("div");
-          kb.className = "simple-keyboard";
-          container.appendChild(kb);
-
-
-        }
-
         //recent
         if (this.config.showLatestItems && this.list && this.list.recently) {
             const bringListRecent = document.createElement("div");
@@ -191,7 +182,85 @@ Module.register("MMM-Bring", {
                 container.appendChild(bringListRecent);
             }
         }
-        return container;
+
+        wrapper.appendChild(container);
+
+        //input
+        if (this.config.inputField) {
+          var inputDiv = document.createElement("div");
+          inputDiv.id = "bring-inputDiv";
+          var input = document.createElement("input");
+          input.id = "bring-inputField";
+          input.setAttribute("type", "text");
+          input.placeholder = "Click here to open keyboard!";
+          input.addEventListener("input", event => {
+              this.keyboard.setInput(event.target.value);
+          });
+
+          input.addEventListener("focus", event => {
+            /*if (!this.keyboard) {
+                  console.log("No keyboard detected. Initializing now.");
+                  this.keyboard = new Keyboard({
+                    onChange: input => this.onChange(input),
+                    onKeyPress: button => this.onKeyPress(button),
+                    mergeDisplay: true,
+                    layoutName: "default",
+            layout: {
+              default: [
+                "q w e r t y u i o p ü",
+                "a s d f g h j k l ä",
+                "{shift} z x c v b n m ö {backspace}",
+                "{numbers} {space} {ent}"
+              ],
+              shift: [
+                "Q W E R T Y U I O P Ü",
+                "A S D F G H J K L Ä",
+                "{shift} Z X C V B N M Ö {backspace}",
+                "{numbers} {space} {ent}"
+              ],
+              numbers: ["1 2 3", "4 5 6", "7 8 9", "{abc} 0 {backspace}"]
+            },
+            display: {
+              "{numbers}": "123",
+              "{ent}": "return",
+              "{backspace}": "⌫",
+              "{shift}": "⇧",
+              "{abc}": "ABC"
+            }
+            });
+            //Add event listener on first implementation of keyboard.
+            document.addEventListener("click", event => {
+            if ( event.target !== this.keyboard.keyboardDOM && event.target.id !== "bring-inputField" && !event.target.classList.contains("hg-button")) {
+                this.hideKeyboard();
+            }
+            });
+            }*/
+          });
+
+          var send = document.createElement("button");
+          send.className = "bring-sendButton";
+          send.innerText = "Add to List!";
+          send.setAttribute("name", "sendPurchase");
+          send.onclick = () => {
+              var addItem = document.getElementById("bring-inputField").value;
+              if (addItem !== '') {
+                  //capitalize first letter
+                  addItem = addItem.charAt(0).toUpperCase() + addItem.substring(1);
+                  console.log("[MM-Bring] "+addItem + " added to List!");
+                  this.itemClicked({name: addItem, purchase: false, listId: this.list.uuid});
+              } else {
+                  console.log("[MMM-Bring] Nothing entered to add to the List!");
+              }
+          };
+          inputDiv.appendChild(input);
+          inputDiv.appendChild(send);
+
+          const kb = document.createElement("div");
+          kb.className = "simple-keyboard";
+          inputDiv.appendChild(kb);
+          wrapper.appendChild(inputDiv);
+        }
+        return wrapper;
     },
 
     socketNotificationReceived: function (notification, payload) {
@@ -218,6 +287,18 @@ Module.register("MMM-Bring", {
          * If you want to handle the shift and caps lock buttons
          */
         if (button === "{shift}" || button === "{lock}") this.handleShift();
+        if (button === "{numbers}" || button === "{abc}") handleNumbers();
+    },
+
+    handleNumbers: function() {
+        let currentLayout = this.keyboard.options.layoutName;
+        let numbersToggle = currentLayout !== "numbers" ? "numbers" : "default";
+
+        this.keyboard.setOptions({
+            layoutName: numbersToggle
+        });
+
+        this.showKeyboard();
     },
 
     handleShift: function() {
