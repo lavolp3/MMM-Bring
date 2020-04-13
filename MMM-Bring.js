@@ -184,8 +184,6 @@ Module.register("MMM-Bring", {
             }
             //console.log(JSON.stringify(this.lists));
             this.updateDom(1000);
-        } else if (notification === "RELOAD_LIST") {
-            this.sendSocketNotification("GET_LIST", this.config);
         }
     },
 
